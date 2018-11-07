@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			  xmlns:tools="http://schemas.android.com/tools"
+			  android:layout_width="match_parent"
+			  android:layout_height="wrap_content"
+			  android:paddingRight="3dp">
+	<TextView
+		android:id="@+id/history_item_times_tv"
+		android:layout_width="50dp"
+		android:layout_height="wrap_content"
+		android:textSize="@dimen/history_item_textsize"
+		tools:text="1"/>
+	<TextView
+		android:id="@+id/history_item_timestampDisp_tv"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:gravity="center"
+		android:textSize="@dimen/history_item_textsize"
+		tools:text="11-06 15:23:18"/>
+	<TextView
+		android:id="@+id/history_item_timestamp_tv"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="20dp"
+		android:textSize="@dimen/history_item_textsize"
+		tools:text="123436742342"/>
+</LinearLayout>
