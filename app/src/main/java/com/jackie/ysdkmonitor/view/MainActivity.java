@@ -1,34 +1,29 @@
-package com.jackie.ysdkmonitor;
+package com.jackie.ysdkmonitor.view;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jackie.ysdkmonitor.R;
 import com.jackie.ysdkmonitor.entity.HistoryEntity;
 import com.jackie.ysdkmonitor.history.HistoryAdapter;
-import com.jackie.ysdkmonitor.service.ApiService;
-import com.jackie.ysdkmonitor.util.Util;
+import com.jackie.ysdkmonitor.presenter.HistoryPresenter;
 
-import java.lang.ref.WeakReference;
 import java.util.Date;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements IHistoryView {
 	private static final String TAG = "MainActivity";
-	private static Handler uiHandler;
-	public static final int MSG_UPDATE_UI = 1;
 
 	private TextView timesTv;
 	private TextView timestampTv;
 	private RecyclerView historyRv;
 	private HistoryAdapter historyAdapter;
 	private LinearLayoutManager layoutManager;
+	private HistoryPresenter hPresenter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +31,8 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		initView();
-		uiHandler = new Handler(new HandlerCallback(this));
-		startService(new Intent(this, ApiService.class));
+		hPresenter = new HistoryPresenter(this);
+		hPresenter.startService();
 	}
 
 	long preTime;
@@ -61,7 +56,18 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		stopService(new Intent(this, ApiService.class));
+		hPresenter.stopService();
+	}
+
+	@Override
+	public void onDataChanged(HistoryEntity data) {
+		if (data != null) {
+			timesTv.setText(String.valueOf(data.getTimes()));
+			timestampTv.setText(data.getTimestampDisp());
+			historyAdapter.appendData(data);
+			// Force scroll to the latest line
+			layoutManager.scrollToPosition(historyAdapter.getSize() - 1);
+		}
 	}
 
 	private void initView() {
@@ -73,39 +79,5 @@ public class MainActivity extends Activity {
 		historyRv = findViewById(R.id.history_rv);
 		historyRv.setLayoutManager(layoutManager);
 		historyRv.setAdapter(historyAdapter);
-	}
-
-	public static Handler getUIHandler() {
-		return uiHandler;
-	}
-
-	private static class HandlerCallback implements Handler.Callback {
-		private WeakReference<MainActivity> mainActivityWeakReference;
-
-		public HandlerCallback(MainActivity mainActivity) {
-			this.mainActivityWeakReference = new WeakReference<>(mainActivity);
-		}
-
-		@Override
-		public boolean handleMessage(Message msg) {
-			switch (msg.what) {
-				case MSG_UPDATE_UI: {
-					Object[] data = (Object[])msg.obj;
-					Integer count = (Integer) data[0];
-					Long timestamp = (Long) data[1];
-					MainActivity mainActivity = mainActivityWeakReference.get();
-					if (mainActivity != null) {
-
-						String times = String.valueOf(count);
-						mainActivity.timesTv.setText(times);
-						mainActivity.timestampTv.setText(Util.formatDate(timestamp));
-						mainActivity.historyAdapter.appendData(new HistoryEntity(count, timestamp));
-						mainActivity.layoutManager.scrollToPosition(mainActivity.historyAdapter.getSize() - 1);
-					}
-					break;
-				}
-			}
-			return false;
-		}
 	}
 }
